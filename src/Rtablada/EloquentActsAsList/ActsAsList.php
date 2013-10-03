@@ -28,10 +28,84 @@ trait ActsAsList {
 	 */
 	public function isLast()
 	{
-		if ($postion = $this->getAttribute($this->positionColumn)) {
-			if (!$this->where($this->positionColumn, '>', $postion)) {
+		if ($position = $this->getAttribute($this->positionColumn)) {
+			if (!$this->where($this->positionColumn, '>', $position)->first()) {
 				return true;
 			}
+		}
+	}
+
+	/**
+	 * Decrements the position value
+	 *
+	 * @param  integer $amount
+	 *
+	 * @return void
+	 */
+	public function decrementPosition($amount = 1)
+	{
+		$this->decrement($this->positionColumn, $amount);
+		$this->save();
+	}
+
+	/**
+	 * Increments the position value
+	 *
+	 * @param  integer $amount
+	 *
+	 * @return void
+	 */
+	public function incrementPosition($amount = 1)
+	{
+		$this->increment($this->positionColumn, $amount);
+	}
+
+
+	/**
+	 * Gets the next item in the list
+	 * @return Eloquent
+	 */
+	public function getNextItem()
+	{
+		$position = $this->getAttribute($this->positionColumn);
+
+		return $this->where($this->positionColumn, $position + 1)->first();
+	}
+
+	/**
+	 * Gets the previous item in the list
+	 * @return Eloquent
+	 */
+	public function getPreviousItem()
+	{
+		$position = $this->getAttribute($this->positionColumn);
+
+		return $this->where($this->positionColumn, $position - 1)->first();
+	}
+
+	/**
+	 * Swap position with the next item
+	 *
+	 * @return void
+	 */
+	public function moveLower()
+	{
+		if (!$this->isLast()) {
+			$this->getNextItem()->decrementPosition();
+			$this->incrementPosition();
+		}
+	}
+
+	/**
+	 * Swap position with the previous item
+	 *
+	 * @return void
+	 */
+	public function moveHigher()
+	{
+		if (!$this->isFirst()) {
+			$this->getPreviousItem()->incrementPosition();
+			$this->decrementPosition();
 		}
 	}
 }
